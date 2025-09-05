@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 2631129177991806300}
   - component: {fileID: 922252312664104385}
   - component: {fileID: -4246326478798993313}
+  - component: {fileID: 4180223048734306957}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Colisionador
@@ -150,3 +151,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   extraImpactImpulse: 5
+--- !u!114 &4180223048734306957
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2217741051040880425}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37f7df9213c5a7e49bc72652cfe47221, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetTagForHit: Colisionador
+  lifeSeconds: 5

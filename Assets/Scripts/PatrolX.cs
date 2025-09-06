@@ -11,23 +11,24 @@ public class PatrolX : MonoBehaviour
     public bool useLocalPosition = false;
     public bool startAtMin = true;
 
-    bool dead;                 // si muere, deja de moverse
+    bool dead;
     Animator anim;
     Rigidbody rootRb;
+    int dir = 1;   // 1 = derecha, -1 = izquierda
 
     void Awake()
     {
         anim = GetComponent<Animator>();
-        rootRb = GetComponent<Rigidbody>(); // suele estar kinematic
+        rootRb = GetComponent<Rigidbody>();
         if (minX > maxX) { var t = minX; minX = maxX; maxX = t; }
     }
-
-    int dir = 1;
 
     void Start()
     {
         if (startAtMin) SetX(minX);
         else dir = (GetX() >= (minX + maxX) * 0.5f) ? -1 : 1;
+
+        ApplyRotation();
     }
 
     void Update()
@@ -35,27 +36,48 @@ public class PatrolX : MonoBehaviour
         if (dead) return;
 
         float x = GetX() + dir * speed * Time.deltaTime;
-        if (dir > 0 && x >= maxX) { x = maxX; dir = -1; }
-        else if (dir < 0 && x <= minX) { x = minX; dir = 1; }
+
+        if (dir > 0 && x >= maxX)
+        {
+            x = maxX;
+            dir = -1;
+            ApplyRotation();   // rotar al llegar
+        }
+        else if (dir < 0 && x <= minX)
+        {
+            x = minX;
+            dir = 1;
+            ApplyRotation();   // rotar al llegar
+        }
+
         SetX(x);
     }
 
-    // --- LLAMAR ESTO CUANDO LO GOLPEA LA BALA ---
+    // --- Cambiar rotación Y entre positiva y negativa ---
+    void ApplyRotation()
+    {
+        Vector3 euler = transform.eulerAngles;
+        if (dir > 0)
+            euler.y = 88.803f;     // hacia un lado
+        else
+            euler.y = -88.803f;    // hacia el otro lado
+        transform.eulerAngles = euler;
+    }
+
+    // KillAndRagdoll como lo tenías
     public void KillAndRagdoll(Vector3 hitPoint, Vector3 impulse)
     {
         if (dead) return;
-        dead = true;              // deja de moverse
+        dead = true;
 
-        // apagar animación del root
         if (anim) anim.enabled = false;
 
-        // activar física en los huesos (ragdoll)
         var bodies = GetComponentsInChildren<Rigidbody>(true);
         Rigidbody closest = null; float best = float.MaxValue;
 
         foreach (var rb in bodies)
         {
-            if (rb == rootRb) continue;   // no el root
+            if (rb == rootRb) continue;
             rb.isKinematic = false;
             rb.useGravity = true;
 
@@ -63,7 +85,6 @@ public class PatrolX : MonoBehaviour
             if (d < best) { best = d; closest = rb; }
         }
 
-        // habilitar colliders de huesos por si estaban apagados
         foreach (var col in GetComponentsInChildren<Collider>(true))
             if (!rootRb || col.attachedRigidbody != rootRb)
                 col.enabled = true;
@@ -71,7 +92,6 @@ public class PatrolX : MonoBehaviour
         if (closest) closest.AddForceAtPosition(impulse, hitPoint, ForceMode.Impulse);
     }
 
-    // fallback por si querés detectar desde acá (si el root recibe la colisión)
     void OnCollisionEnter(Collision c)
     {
         if (!dead && c.collider.CompareTag("Colisionador"))

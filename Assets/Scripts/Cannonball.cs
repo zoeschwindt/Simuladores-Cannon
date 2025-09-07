@@ -36,6 +36,6 @@ public class Cannonball : MonoBehaviour
         }
 
         // destruir la bala para que no rebote
-        Destroy(gameObject);
+        //Destroy(gameObject);
     }
 }

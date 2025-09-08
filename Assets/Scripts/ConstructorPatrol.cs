@@ -3,8 +3,8 @@ using UnityEngine;
 public class ConstructorPatrol : MonoBehaviour
 {
     [Header("Límites en X (mundo)")]
-    public float minX = -367f;   // límite izquierdo
-    public float maxX = 316.2f;  // límite derecho
+    public float minX = -367f;   
+    public float maxX = 316.2f;  
 
     [Header("Movimiento")]
     public float speed = 5f;
@@ -12,7 +12,7 @@ public class ConstructorPatrol : MonoBehaviour
     bool dead;
     Animator anim;
     Rigidbody rootRb;
-    int dir = -1;   // empieza yendo hacia la izquierda
+    int dir = -1;   
 
     void Awake()
     {
@@ -22,7 +22,7 @@ public class ConstructorPatrol : MonoBehaviour
 
     void Start()
     {
-        // arranca en el extremo derecho
+       
         SetX(maxX);
         dir = -1;
         ApplyRotation();
@@ -34,7 +34,7 @@ public class ConstructorPatrol : MonoBehaviour
 
         float x = transform.position.x + dir * speed * Time.deltaTime;
 
-        // --- límites ---
+        
         if (dir < 0 && x <= minX)
         {
             x = minX;
@@ -48,7 +48,7 @@ public class ConstructorPatrol : MonoBehaviour
             ApplyRotation();
         }
 
-        // --- mover ---
+        
         Vector3 pos = transform.position;
         pos.x = x;
         transform.position = pos;
@@ -61,7 +61,7 @@ public class ConstructorPatrol : MonoBehaviour
         transform.eulerAngles = euler;
     }
 
-    // --- Ragdoll al morir ---
+    
     public void KillAndRagdoll(Vector3 hitPoint, Vector3 impulse)
     {
         if (dead) return;

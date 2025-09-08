@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class FollowPivot : MonoBehaviour
 {
-    public Transform target; // asigná tu BarrelPivot
+    public Transform target; 
     Vector3 localPos; Quaternion localRot;
 
     void Start()

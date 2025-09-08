@@ -1,15 +1,14 @@
 using UnityEngine;
 
-/// Observa un HingeJoint (u otra condición) y avisa al ShotLogger
 [RequireComponent(typeof(Rigidbody))]
 public class TargetKnockdownReporter : MonoBehaviour
 {
     [Header("Identificación")]
-    public string targetIdOverride;         // si lo dejás vacío usa gameObject.name
+    public string targetIdOverride;         
 
     [Header("Detección por Hinge")]
-    public HingeJoint hinge;                // si es null, intenta GetComponent<HingeJoint>()
-    public float downAngleThreshold = -60f; // se considera derribado al pasar este ángulo
+    public HingeJoint hinge;               
+    public float downAngleThreshold = -60f; 
     public bool onlyOnce = true;
 
     [Header("Alternativa: detecto por destrucción del joint")]
@@ -57,7 +56,7 @@ public class TargetKnockdownReporter : MonoBehaviour
         string id = string.IsNullOrEmpty(targetIdOverride) ? gameObject.name : targetIdOverride;
         if (ShotLogger.Instance)
         {
-            // Si no fue “marcado” por una bala, igual lo contamos pero con shotId 0 no suma
+            
             int shotId = Mathf.Max(0, lastHitShotId);
             ShotLogger.Instance.NotifyTargetDown(shotId, id);
         }

@@ -21,9 +21,9 @@ public class ShotLogger : MonoBehaviour
 
     [Header("Scoring")]
     public int pointsPerTarget = 100;
-    public float timePenaltyPerSecond = 3f;    // resta puntos por segundo de vuelo
-    public float impulseBonusScale = 0.2f;     // bonus = impulseMagnitude * scale
-    public float minReportDuration = 2.5f;     // tiempo mínimo que se mantiene visible el panel
+    public float timePenaltyPerSecond = 3f;    
+    public float impulseBonusScale = 0.2f;    
+    public float minReportDuration = 2.5f;     
 
     [Header("UI")]
     public GameObject reportPanel;
@@ -40,7 +40,6 @@ public class ShotLogger : MonoBehaviour
         if (reportPanel) reportPanel.SetActive(false);
     }
 
-    // ---- API llamada por la bala / targets ----
     public int BeginShot()
     {
         int id = _nextId++;
@@ -69,7 +68,7 @@ public class ShotLogger : MonoBehaviour
     {
         if (!_attempts.TryGetValue(shotId, out var a)) return;
 
-        // ----- Score -----
+       
         int score = a.knockedTargets.Count * pointsPerTarget;
 
         if (a.firstImpactRecorded)
@@ -78,7 +77,7 @@ public class ShotLogger : MonoBehaviour
             score += Mathf.RoundToInt(a.collisionImpulse * impulseBonusScale);
         }
 
-        // ----- Reporte -----
+       
         if (reportPanel && scoreText && detailsText)
         {
             reportPanel.SetActive(true);

@@ -14,7 +14,7 @@ public class PatrolX : MonoBehaviour
     bool dead;
     Animator anim;
     Rigidbody rootRb;
-    int dir = 1;   // 1 = derecha, -1 = izquierda
+    int dir = 1;   
 
     void Awake()
     {
@@ -41,30 +41,30 @@ public class PatrolX : MonoBehaviour
         {
             x = maxX;
             dir = -1;
-            ApplyRotation();   // rotar al llegar
+            ApplyRotation();   
         }
         else if (dir < 0 && x <= minX)
         {
             x = minX;
             dir = 1;
-            ApplyRotation();   // rotar al llegar
+            ApplyRotation();   
         }
 
         SetX(x);
     }
 
-    // --- Cambiar rotación Y entre positiva y negativa ---
+   
     void ApplyRotation()
     {
         Vector3 euler = transform.eulerAngles;
         if (dir > 0)
-            euler.y = 88.803f;     // hacia un lado
+            euler.y = 88.803f;     
         else
-            euler.y = -88.803f;    // hacia el otro lado
+            euler.y = -88.803f;    
         transform.eulerAngles = euler;
     }
 
-    // KillAndRagdoll como lo tenías
+    
     public void KillAndRagdoll(Vector3 hitPoint, Vector3 impulse)
     {
         if (dead) return;

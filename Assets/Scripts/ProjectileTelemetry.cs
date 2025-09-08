@@ -3,8 +3,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class ProjectileTelemetry : MonoBehaviour
 {
-    public string targetTagForHit = "Colisionador";   // tu tag de la bala en el objetivo NO importa; la bala es esta
-    public float lifeSeconds = 5f;                    // por si tu bala se autodestruye
+    public string targetTagForHit = "Colisionador";   
+    public float lifeSeconds = 5f;                    
 
     Rigidbody rb;
     int shotId;
@@ -19,14 +19,13 @@ public class ProjectileTelemetry : MonoBehaviour
 
     void OnCollisionEnter(Collision c)
     {
-        // Registrar primer impacto
+    
         if (!impactSent && ShotLogger.Instance)
         {
             ShotLogger.Instance.RecordFirstImpact(shotId, c);
             impactSent = true;
         }
 
-        // Si el objeto impactado tiene un reporter, anotarle este shotId
         var rep = c.collider.GetComponentInParent<TargetKnockdownReporter>();
         if (rep) rep.MarkLastHitBy(shotId);
     }
@@ -35,7 +34,7 @@ public class ProjectileTelemetry : MonoBehaviour
     {
         if (!impactSent && ShotLogger.Instance)
         {
-            // crear una "colisión falsa" mínima si querés, o registrar solo el tiempo
+        
             var fakeCollision = new Collision();
             ShotLogger.Instance.RecordFirstImpact(shotId, fakeCollision);
             impactSent = true;

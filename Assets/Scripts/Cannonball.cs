@@ -17,7 +17,7 @@ public class Cannonball : MonoBehaviour
 
     void OnCollisionEnter(Collision col)
     {
-        // tu empuje extra si el otro tiene RB
+        
         if (extraImpactImpulse > 0f && col.rigidbody)
         {
             Vector3 dir = rb.velocity.sqrMagnitude > 0.01f ? rb.velocity.normalized : transform.forward;
@@ -25,7 +25,7 @@ public class Cannonball : MonoBehaviour
             col.rigidbody.AddForceAtPosition(dir * extraImpactImpulse, point, ForceMode.Impulse);
         }
 
-        // --- avisar al enemigo para que caiga y deje de moverse (si tiene PatrolX) ---
+       
         var patrol = col.collider.GetComponentInParent<PatrolX>();
         if (patrol != null)
         {
@@ -35,7 +35,6 @@ public class Cannonball : MonoBehaviour
             patrol.KillAndRagdoll(contact.point, impulse);
         }
 
-        // destruir la bala para que no rebote
-        //Destroy(gameObject);
+      
     }
 }

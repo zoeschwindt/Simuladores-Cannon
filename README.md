@@ -70,6 +70,8 @@ Link en el README.
 
 ## Video de demostración
 https://youtu.be/m6RDaVcKTtM
+## Video de demostración con Firebase
+https://youtu.be/VhM_Q-x_ObI?si=UJT08tF7LjYYw13x
 
 ---
 

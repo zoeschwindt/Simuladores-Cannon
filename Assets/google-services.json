@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "504919597484",
+    "firebase_url": "https://simuladores-cannon-default-rtdb.firebaseio.com",
+    "project_id": "simuladores-cannon",
+    "storage_bucket": "simuladores-cannon.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:504919597484:android:3bd9f4e66d26557a5a9a09",
+        "android_client_info": {
+          "package_name": "com.UnityTechnologies.com.unity.template.urpblank"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAV2VqsfNka2MzuqbajAjy09Fz_5TiXqsI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

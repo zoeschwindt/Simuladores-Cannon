@@ -21,14 +21,19 @@ public class ShotLogger : MonoBehaviour
 
     [Header("Scoring")]
     public int pointsPerTarget = 100;
-    public float timePenaltyPerSecond = 3f;    
-    public float impulseBonusScale = 0.2f;    
-    public float minReportDuration = 2.5f;     
+    public float timePenaltyPerSecond = 3f;
+    public float impulseBonusScale = 0.2f;
+    public float minReportDuration = 2.5f;
 
     [Header("UI")]
     public GameObject reportPanel;
     public Text scoreText;
     public Text detailsText;
+
+    [Header("Datos del disparo")]
+    public float currentAngle;
+    public float currentForce;
+    public float currentMass;
 
     int _nextId = 1;
     readonly Dictionary<int, Attempt> _attempts = new();
@@ -68,7 +73,6 @@ public class ShotLogger : MonoBehaviour
     {
         if (!_attempts.TryGetValue(shotId, out var a)) return;
 
-       
         int score = a.knockedTargets.Count * pointsPerTarget;
 
         if (a.firstImpactRecorded)
@@ -77,22 +81,44 @@ public class ShotLogger : MonoBehaviour
             score += Mathf.RoundToInt(a.collisionImpulse * impulseBonusScale);
         }
 
-       
+        // --- Guardar en Firebase ---
+        if (FirebaseManager.Instance && FirebaseManager.Instance.isReady)
+        {
+            bool acierto = a.knockedTargets.Count > 0;
+            float distancia = a.firstImpactRecorded
+                ? Vector3.Distance(Vector3.zero, a.impactPoint)
+                : 0f;
+
+            FirebaseManager.Instance.GuardarDisparo(
+                currentAngle.ToString("F1"),
+                currentForce,
+                currentMass,
+                acierto,
+                distancia,
+                a.knockedTargets.Count
+            );
+        }
+
+        // --- Mostrar reporte en UI ---
         if (reportPanel && scoreText && detailsText)
         {
             reportPanel.SetActive(true);
             scoreText.text = $"Puntuación: <b>{Mathf.Max(0, score)}</b>";
 
-            string impact = a.firstImpactRecorded ? $"({a.impactPoint.x:F2}, {a.impactPoint.y:F2}, {a.impactPoint.z:F2})" : "—";
-            string relV = a.firstImpactRecorded ? $"{a.relativeVelocity.magnitude:F2} m/s" : "—";
-            string impulse = a.firstImpactRecorded ? $"{a.collisionImpulse:F2} Ns" : "—";
-            detailsText.text = $"Tiro #{a.id}\n" +
-                               $"- Tiempo de vuelo: {a.timeOfFlight:F3} s\n" +
-                               $"- Punto de impacto: {impact}\n" +
-                               $"- Velocidad relativa: {relV}\n" +
-                               $"- Impulso de colisión: {impulse}\n" +
-                               $"- Piezas derribadas: {a.knockedTargets.Count} ({string.Join(", ", a.knockedTargets)})";
+            string impact = a.firstImpactRecorded ?
+                $"({a.impactPoint.x:F2}, {a.impactPoint.y:F2}, {a.impactPoint.z:F2})" : "—";
+            string relV = a.firstImpactRecorded ?
+                $"{a.relativeVelocity.magnitude:F2} m/s" : "—";
+            string impulse = a.firstImpactRecorded ?
+                $"{a.collisionImpulse:F2} Ns" : "—";
 
+            detailsText.text =
+                $"Tiro #{a.id}\n" +
+                $"- Tiempo de vuelo: {a.timeOfFlight:F3} s\n" +
+                $"- Punto de impacto: {impact}\n" +
+                $"- Velocidad relativa: {relV}\n" +
+                $"- Impulso de colisión: {impulse}\n" +
+                $"- Piezas derribadas: {a.knockedTargets.Count} ({string.Join(", ", a.knockedTargets)})";
 
             StopAllCoroutines();
             StartCoroutine(HidePanelAfter(minReportDuration));
@@ -100,7 +126,6 @@ public class ShotLogger : MonoBehaviour
 
         _attempts.Remove(shotId);
     }
-
 
     System.Collections.IEnumerator HidePanelAfter(float t)
     {

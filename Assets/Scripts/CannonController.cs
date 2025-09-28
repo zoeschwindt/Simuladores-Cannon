@@ -4,42 +4,45 @@ using UnityEngine.UI;
 public class CannonController : MonoBehaviour
 {
     [Header("Referencias")]
-    [SerializeField] Transform baseTransform;   
-    [SerializeField] Transform barrelPivot;    
-    [SerializeField] Transform muzzle;         
+    [SerializeField] Transform baseTransform;
+    [SerializeField] Transform barrelPivot;
+    [SerializeField] Transform muzzle;
 
-    [Header("UI Ángulo/Horizontal")]
-    [SerializeField] Slider horizontalSlider;   
-    [SerializeField] Slider verticalSlider;     
+    [Header("UI Movimiento X")]
+    [SerializeField] Slider horizontalSlider;
+    [SerializeField] Text horizontalLabel;
+
+    [Header("UI Ángulo (Vertical)")]
+    [SerializeField] Slider verticalSlider;
     [SerializeField] bool invertVerticalSlider = false;
-    [SerializeField] Text angleLabel;           
+    [SerializeField] Text angleLabel;
 
-    [Header("UI Fuerza")]
-    [SerializeField] Slider forceSlider;        
+    [Header("UI Velocidad")]
+    [SerializeField] Slider forceSlider;
     [SerializeField] float minForce = 50f;
     [SerializeField] float maxForce = 1500f;
-    [SerializeField] Text forceLabel;           
+    [SerializeField] Text forceLabel;
 
     [Header("UI Masa")]
-    [SerializeField] Dropdown massDropdown;     
+    [SerializeField] Dropdown massDropdown;
     [SerializeField] float[] massOptions = new float[] { 0.5f, 1f, 2f, 5f };
-    [SerializeField] Text massLabel;           
+    [SerializeField] Text massLabel;
 
     [Header("Rangos de movimiento")]
     [SerializeField] float minX = -10f;
     [SerializeField] float maxX = 10f;
-    [SerializeField] float minElevation = 0f;   
-    [SerializeField] float maxElevation = 60f;  
+    [SerializeField] float minElevation = 0f;
+    [SerializeField] float maxElevation = 85f;
 
     public enum Axis { X, Y, Z }
-    [SerializeField] Axis elevationAxis = Axis.X; 
+    [SerializeField] Axis elevationAxis = Axis.X;
 
     [Header("Disparo")]
     [SerializeField] Rigidbody projectilePrefab;
-    [SerializeField] float muzzleVelocity = 300f;  
+    [SerializeField] float muzzleVelocity = 300f;
     [SerializeField] float fireCooldown = 0.25f;
     [SerializeField] float projectileLife = 8f;
-    [SerializeField] float spawnForwardOffset = 0.3f; 
+    [SerializeField] float spawnForwardOffset = 0.3f;
     [SerializeField] bool ignoreCollisionWithCannon = true;
     [SerializeField] AudioSource fireSfx;
 
@@ -47,7 +50,8 @@ public class CannonController : MonoBehaviour
     [SerializeField] bool startAtMinOnPlay = true;
 
     float nextFireTime;
-    Quaternion barrelZeroLocalRot; 
+    Quaternion barrelZeroLocalRot;
+    private float currentElevationAngle;
 
     void Reset()
     {
@@ -58,15 +62,17 @@ public class CannonController : MonoBehaviour
 
     void Awake()
     {
-        
         barrelZeroLocalRot = barrelPivot ? barrelPivot.localRotation : Quaternion.identity;
 
+        // --- Slider Movimiento X ---
         if (horizontalSlider)
         {
             horizontalSlider.minValue = 0f;
             horizontalSlider.maxValue = 1f;
             horizontalSlider.onValueChanged.AddListener(SetHorizontalNormalized);
         }
+
+        // --- Slider Ángulo ---
         if (verticalSlider)
         {
             verticalSlider.minValue = 0f;
@@ -74,21 +80,24 @@ public class CannonController : MonoBehaviour
             verticalSlider.onValueChanged.AddListener(SetElevationNormalized);
         }
 
-       
+        // --- Slider Velocidad ---
         if (forceSlider)
         {
             forceSlider.minValue = minForce;
             forceSlider.maxValue = maxForce;
-            
+
             forceSlider.SetValueWithoutNotify(Mathf.Clamp(muzzleVelocity, minForce, maxForce));
             forceSlider.onValueChanged.AddListener(v =>
             {
                 muzzleVelocity = v;
-                if (forceLabel) forceLabel.text = $"Fuerza: {muzzleVelocity:0}";
+                if (forceLabel) forceLabel.text = $"Velocidad: {muzzleVelocity:0} km/h";
             });
-            if (forceLabel) forceLabel.text = $"Fuerza: {muzzleVelocity:0}";
+            if (forceLabel) forceLabel.text = $"Velocidad: {muzzleVelocity:0} km/h";
         }
 
+
+
+        // --- Dropdown Masa ---
         if (massDropdown && massDropdown.options.Count == 0)
         {
             massDropdown.options.Clear();
@@ -109,7 +118,7 @@ public class CannonController : MonoBehaviour
 
     void Start()
     {
-       
+        // Configuración inicial del movimiento en X
         if (baseTransform && horizontalSlider)
         {
             float t = Mathf.InverseLerp(minX, maxX, baseTransform.position.x);
@@ -117,7 +126,7 @@ public class CannonController : MonoBehaviour
             SetHorizontalNormalized(horizontalSlider.value);
         }
 
-        
+        // Configuración inicial del ángulo
         if (startAtMinOnPlay)
         {
             if (verticalSlider)
@@ -129,21 +138,23 @@ public class CannonController : MonoBehaviour
             if (verticalSlider) SetElevationNormalized(verticalSlider.value);
         }
 
-        
         if (angleLabel) angleLabel.text = $"Ángulo: {minElevation:0}°";
     }
 
-    
+    // --- Movimiento en X ---
     public void SetHorizontalNormalized(float t)
     {
         float x = Mathf.Lerp(minX, maxX, Mathf.Clamp01(t));
         if (!baseTransform) return;
+
         var p = baseTransform.position;
         p.x = x;
         baseTransform.position = p;
+
+        if (horizontalLabel) horizontalLabel.text = $"Posición X: {x:0.0}";
     }
 
-    
+    // --- Ángulo (vertical) ---
     void ApplyElevationAngle(float angle)
     {
         if (!barrelPivot) return;
@@ -151,6 +162,8 @@ public class CannonController : MonoBehaviour
                        elevationAxis == Axis.Y ? Vector3.up : Vector3.forward;
 
         barrelPivot.localRotation = barrelZeroLocalRot * Quaternion.AngleAxis(angle, axis);
+        currentElevationAngle = angle;
+
         if (angleLabel) angleLabel.text = $"Ángulo: {angle:0}°";
     }
 
@@ -161,7 +174,6 @@ public class CannonController : MonoBehaviour
         ApplyElevationAngle(angle);
     }
 
-   
     float GetSelectedMass()
     {
         if (!massDropdown || massOptions == null || massOptions.Length == 0) return 1f;
@@ -169,7 +181,7 @@ public class CannonController : MonoBehaviour
         return massOptions[i];
     }
 
-   
+    // --- Disparo ---
     public void Fire()
     {
         if (Time.time < nextFireTime) return;
@@ -177,15 +189,17 @@ public class CannonController : MonoBehaviour
 
         nextFireTime = Time.time + fireCooldown;
 
+        // Pasar datos al ShotLogger
+        ShotLogger.Instance.currentAngle = currentElevationAngle;
+        ShotLogger.Instance.currentForce = muzzleVelocity;
+        ShotLogger.Instance.currentMass = GetSelectedMass();
+
+        // Instanciar proyectil
         Vector3 spawnPos = muzzle.position + muzzle.forward * Mathf.Max(0f, spawnForwardOffset);
         Quaternion rot = muzzle.rotation;
 
         Rigidbody rb = Instantiate(projectilePrefab, spawnPos, rot);
-
-       
         rb.mass = GetSelectedMass();
-
-       
         rb.velocity = muzzle.forward * muzzleVelocity;
 
         if (ignoreCollisionWithCannon)
@@ -201,7 +215,6 @@ public class CannonController : MonoBehaviour
         if (fireSfx) fireSfx.Play();
     }
 
-    
     void Update()
     {
         float h = Input.GetAxisRaw("Horizontal");
@@ -212,32 +225,4 @@ public class CannonController : MonoBehaviour
             verticalSlider.value = Mathf.Clamp01(verticalSlider.value + v * Time.deltaTime);
         if (Input.GetKeyDown(KeyCode.Space)) Fire();
     }
-
-#if UNITY_EDITOR
-    void OnValidate()
-    {
-        if (maxX < minX) maxX = minX;
-        if (maxElevation < minElevation) maxElevation = minElevation;
-
-        if (!Application.isPlaying)
-        {
-            if (horizontalSlider) SetHorizontalNormalized(horizontalSlider.value);
-            if (verticalSlider) SetElevationNormalized(verticalSlider.value);
-            if (forceSlider)
-            {
-                forceSlider.minValue = minForce;
-                forceSlider.maxValue = maxForce;
-            }
-        }
-    }
-
-    [ContextMenu("Calibrar: usar rotación actual como 0°")]
-    void CalibrarCero()
-    {
-        if (!barrelPivot) return;
-        barrelZeroLocalRot = barrelPivot.localRotation; 
-        ApplyElevationAngle(minElevation);
-        if (verticalSlider) verticalSlider.SetValueWithoutNotify(invertVerticalSlider ? 1f : 0f);
-    }
-#endif
 }

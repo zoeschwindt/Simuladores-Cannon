@@ -3,8 +3,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class ProjectileTelemetry : MonoBehaviour
 {
-    public string targetTagForHit = "Colisionador";   
-    public float lifeSeconds = 5f;                    
+    public string targetTagForHit = "Colisionador";
+    public float lifeSeconds = 5f;
 
     Rigidbody rb;
     int shotId;
@@ -19,7 +19,7 @@ public class ProjectileTelemetry : MonoBehaviour
 
     void OnCollisionEnter(Collision c)
     {
-    
+
         if (!impactSent && ShotLogger.Instance)
         {
             ShotLogger.Instance.RecordFirstImpact(shotId, c);
@@ -34,7 +34,7 @@ public class ProjectileTelemetry : MonoBehaviour
     {
         if (!impactSent && ShotLogger.Instance)
         {
-        
+
             var fakeCollision = new Collision();
             ShotLogger.Instance.RecordFirstImpact(shotId, fakeCollision);
             impactSent = true;
@@ -48,6 +48,8 @@ public class ProjectileTelemetry : MonoBehaviour
 
     void OnDestroy()
     {
+        Debug.Log($" Projectile destroyed, ending shot {shotId}");
         if (ShotLogger.Instance) ShotLogger.Instance.EndShot(shotId);
     }
+
 }
